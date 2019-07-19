@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}首页{% endblock title %}
+{% block content %}
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'article:article_list' %}">最新</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'article:article_list' %}?order=total_views">最热</a>
+                </li>
+            </ul>
+        </nav>
+        <div class="row">
+            <div class="col-auto mr-auto">
+                <form class="form-inline">
+                    <label class="sr-only">content</label>
+                    <input type="text" class="form-control mb-2 mr-sm-2" name="search" placeholder="搜索文章..." required>
+                </form>
+            </div>
+        </div>
+
+        {% if search %}
+            {% if articles %}
+                <h4><span style="color: red">{{ search }}</span>的搜索结果如下：</h4>
+            {% else %}
+                <h4>暂无<span style="color: red">{{ search }}</span>有关的文章。</h4>
+            {% endif %}
+        {% endif %}
+
+        <div class="row mt-2">
+            {% for article in articles %}
+                {% if article.avatar %}
+                    <div class="col-3">
+                        <img src="{{ article.avatar.url }}" alt="avatar" style="max-width: 100%; border-radius: 20px">
+                    </div>
+                {% endif %}
+                <div class="col">
+                    {% if article.column %}
+                        <a role="button" class="btn btn-sm mb-2 btn-success" href="{% url 'article:article_list' %}?column={{ article.column.id }}">{{ article.column }}</a>
+                    {% endif %}
+                    <span>
+                        {% for tag in article.tags.all %}
+                            <a href="{% url 'article:article_list' %}?tag={{ tag }}" class="badge badge-secondary">{{ tag }}</a>
+                        {% endfor %}
+                    </span>
+                    <h4>
+                        <b>
+                            <a href="{% url 'article:article_detail' article.id %}" style="color: black">{{ article.title }}</a>
+                        </b>
+                    </h4>
+                    <div>
+                        <p style="color: grey">
+                            {{ article.body|slice:'100' }}...
+                        </p>
+                    </div>
+                    <p>
+                        <span>
+                            <i class="fa fa-eye" style="color: lightskyblue"></i>
+                            {{ article.total_views }}&nbsp;&nbsp;&nbsp;
+                        </span>
+                        <span>
+                            <i class="fa fa-comments" style="color: yellowgreen;"></i>
+                            {{ article.comments.count }}&nbsp;&nbsp;&nbsp;
+                        </span>
+                        <span>
+                            <i class="fa fa-clock" style="color: pink"></i>
+                            {{ article.created|date:'Y-m-d' }}
+                        </span>
+                    </p>
+                </div>
+                <hr style="width: 100%"/>
+            {% endfor %}
+        </div>
+        <div class="pagination row">
+            <div class="m-auto">
+                {% if articles.has_previous %}
+                    <a href="?page=1&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}" class="btn btn-success">&laquo; 1</a>
+                    <span>...</span>
+                    <a href="?page={{ articles.previous_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
+                       class="btn btn-secondary">{{ articles.previous_page_number }}</a>
+                {% endif %}
+
+                <span class="current btn btn-danger btn-lg">{{ articles.number }}</span>
+
+                {% if articles.has_next %}
+                    <a href="?page={{ articles.next_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
+                       class="btn btn-secondary">{{ articles.next_page_number }}</a>
+                    <span>...</span>
+                    <a href="?page={{ articles.paginator.num_pages }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
+                       class="btn btn-success">{{ articles.paginator.num_pages }} &raquo;</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}
